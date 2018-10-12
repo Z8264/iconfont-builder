@@ -1,34 +1,27 @@
 const SVGIcons2SVGFontStream = require("svgicons2svgfont");
-
 const fs = require("fs");
 
 /**
- * fontName
- * fontId
- * fontStyle
- * fontWeight
- * fontHeight
- * fixedWidth
- * centerHorizontally
- * normalize
- * round
- * descent
- * ascent
- * metadata
- * log
+ * svg -> svg font stream
+ * @param {Object} icons 
+ * generateSvg([{
+ * 	file: "svg/all.svg",
+ * 	unicode: ["\uE001"],
+ * 	name: "all"
+ * }])
+ * 
  */
-
 async function generateSvg(icons) {
-  const stream = new SVGIcons2SVGFontStream({
-    normalize: true,
-    fontName: "demo",
-    fontHeight: 1024,
-    fontWidth: 1024,
-    round: 1000
-  });
-
-  let font = new Buffer(0);
   return new Promise((resolve, reject) => {
+    const opts = {
+      normalize: true,
+      fontName: "demo",
+      fontHeight: 1024,
+      fontWidth: 1024,
+      round: 1000
+    };
+    const stream = new SVGIcons2SVGFontStream(opts);
+    let font = new Buffer(0);
     stream
       .on("data", data => {
         font = Buffer.concat([font, data]);
@@ -39,7 +32,6 @@ async function generateSvg(icons) {
       .on("error", err => {
         reject(err);
       });
-
     icons.forEach(icon => {
       const glyph = fs.createReadStream(icon.file);
       glyph.metadata = {
@@ -52,12 +44,3 @@ async function generateSvg(icons) {
   });
 }
 
-generateSvg([
-  {
-    file: "svg/all.svg",
-    unicode: ["\uE001"],
-    name: "all"
-  }
-]).then(str => {
-  console.log(str);
-});
