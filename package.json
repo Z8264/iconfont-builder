@@ -1,0 +1,14 @@
+{
+  "name": "iconfont-builder",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "svgicons2svgfont": "^9.0.3"
+  }
+}
