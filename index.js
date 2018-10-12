@@ -1,6 +1,10 @@
 const SVGIcons2SVGFontStream = require("svgicons2svgfont");
 const fs = require("fs");
-
+const svg2ttf = require('svg2ttf');
+const ttf2woff = require('ttf2woff');
+const ttf2eot = require('ttf2eot');
+const ttf2woff2 = require('ttf2woff2');
+const woff2base64 = require('woff2base64');
 /**
  * svg -> svg font stream
  * @param {Object} icons 
@@ -42,5 +46,27 @@ async function generateSvg(icons) {
     });
     stream.end();
   });
+}
+
+generateSvg([{
+  file: "svg/all.svg",
+  unicode: ["\uE001"],
+  name: "all"
+}]).then(svg => {
+  generateTTF(svg);
+})
+
+async function generateTTF(svg) {
+  const ttf = new Buffer(svg2ttf(svg).buffer);
+  const eot = new Buffer(ttf2eot(new Uint8Array(ttf)).buffer);
+  const woff = new Buffer(ttf2woff(new Uint8Array(ttf)).buffer);
+  const woff2 = new Buffer(ttf2woff(new Uint8Array(ttf)).buffer);
+
+  const css = woff2base64({ "q.woff2":woff2,"q.woff":woff }, { fontFamily: 'iconfont' });
+  fs.writeFileSync('fonts/font.css', css.woff);
+
+  // fs.writeFileSync('fonts/font.ttf',ttf);
+  // fs.writeFileSync('fonts/font.eot',eot);
+  // fs.writeFileSync('fonts/font.woff',woff);
 }
 
