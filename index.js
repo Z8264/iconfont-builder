@@ -27,6 +27,9 @@ const config = {
  * 	unicode: ["\uE001"],
  * 	name: "all"
  * }])
+ * 使用方法：
+ * const svg = await generateSvg(icons);
+ * fs.writeFileSync("fonts/font.svg", svg);
  *
  */
 async function generateSvg(icons) {
@@ -104,15 +107,46 @@ async function generate(icons) {
 }
 
 async function css(icons) {
-
   const fontcss = await generate(icons);
   console.log(fontcss.woff);
 }
 
-css([
-  {
-    file: "svg/all.svg",
-    unicode: ["\uE001"],
-    name: "all"
-  }
-]);
+/**
+ * 获取文件夹下所有svg文件
+ * @param {*} src
+ */
+async function readSvg(src) {
+  return new Promise((resolve, reject) => {
+    fs.readdir(src, (err, files) => {
+      if (err) {
+        reject(err);
+      } else {
+        files = files.filter(file => /\.svg$/i.test(file));
+        resolve(files);
+      }
+    });
+  });
+}
+/**
+ * svg文件 --> icons集合
+ * 
+ * code -> hexcode/unicode/xmlcode
+ */
+function getIcons(files) {
+  let code = 0xe000;
+  return files.map(file => {
+    code++;
+    return {
+      file: file,
+      name: file.replace(".svg", ""),
+      code: code,
+      hex: code.toString(16),   // hexcode
+      unicode: String.fromCharCode(code), // unicode
+      xml: `&#x${code.toString(16)};`  // xmlcode
+    };
+  });
+}
+readSvg("./svg").then(data => {
+  let icons = getIcons(data);
+  console.log(icons);
+});
