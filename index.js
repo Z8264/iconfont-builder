@@ -56,7 +56,7 @@ async function generateSvg(icons) {
     icons.forEach(icon => {
       const glyph = fs.createReadStream(icon.file);
       glyph.metadata = {
-        unicode: icon.unicode,
+        unicode: [icon.unicode],
         name: icon.name
       };
       stream.write(glyph);
@@ -106,16 +106,13 @@ async function generate(icons) {
   return css;
 }
 
-async function css(icons) {
-  const fontcss = await generate(icons);
-  console.log(fontcss.woff);
-}
+
 
 /**
  * 获取文件夹下所有svg文件
- * @param {*} src
+ * @param {*} src  文件路径
  */
-async function readSvg(src) {
+async function getSvgFilesInDir(src) {
   return new Promise((resolve, reject) => {
     fs.readdir(src, (err, files) => {
       if (err) {
@@ -132,21 +129,37 @@ async function readSvg(src) {
  * 
  * code -> hexcode/unicode/xmlcode
  */
-function getIcons(files) {
-  let code = 0xe000;
-  return files.map(file => {
-    code++;
-    return {
-      file: file,
-      name: file.replace(".svg", ""),
-      code: code,
-      hex: code.toString(16),   // hexcode
-      unicode: String.fromCharCode(code), // unicode
-      xml: `&#x${code.toString(16)};`  // xmlcode
-    };
-  });
+async function getIcons(src) {
+  return new Promise((resolve, reject) => {
+    const files = await getSvgFilesInDir(src);
+
+    let code = 0xe000;
+    let icons = files.map(file => {
+      code++;
+      return {
+        file: './svg/' + file,
+        name: file.replace(".svg", ""),
+        code: code,
+        hex: code.toString(16),   // hexcode
+        unicode: String.fromCharCode(code), // unicode
+        xml: `&#x${code.toString(16)};`  // xmlcode
+      };
+    });
+    resolve(icons);
+
+  })
+
 }
-readSvg("./svg").then(data => {
-  let icons = getIcons(data);
-  console.log(icons);
-});
+// readSvg("./svg").then(data => {
+//   let icons = getIcons(data);
+//   console.log(icons);
+// });
+
+async function css(src) {
+  const files = await readSvg(src);
+  const icons = getIcons(files);
+  const fontcss = await generate(icons);
+  console.log(fontcss.woff);
+}
+
+css("./svg");
