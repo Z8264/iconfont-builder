@@ -9,30 +9,18 @@ const woff2base64 = require("woff2base64");
 const config = {
   fontName: "iconfont",
   prefix: "icon",
-  startCodePoint: 0xe000,
-  icons: [
-    {
-      file: "svg/all.svg",
-      unicode: ["\uE001"],
-      name: "all"
-    }
-  ]
+  src: "./svg"
 };
 
 /**
- * svg 文件 -> svg font stream
+ * 将icons集合转化为svg font
  * @param {Object} icons
- * generateSvg([{
- * 	file: "svg/all.svg",
- * 	unicode: ["\uE001"],
- * 	name: "all"
- * }])
  * 使用方法：
  * const svg = await generateSvg(icons);
  * fs.writeFileSync("fonts/font.svg", svg);
  *
  */
-async function generateSvg(icons) {
+async function icons2SVGFont(icons) {
   return new Promise((resolve, reject) => {
     const opts = {
       normalize: true,
@@ -42,7 +30,7 @@ async function generateSvg(icons) {
       round: 1000
     };
     const stream = new SVGIcons2SVGFontStream(opts);
-    let font = new Buffer(0);
+    let font = Buffer.alloc(0);
     stream
       .on("data", data => {
         font = Buffer.concat([font, data]);
@@ -64,37 +52,31 @@ async function generateSvg(icons) {
     stream.end();
   });
 }
-
 /**
- *
- * @param {*} svg
+ * 将icons集合转化为base64 font
+ * @param {Object} icons
  */
-async function generate(icons) {
+async function icons2base64(icons) {
   /**
    * svg
    */
-  const svg = await generateSvg(icons);
-  // fs.writeFileSync("fonts/font.svg", svg);
+  const svg = await icons2SVGFont(icons);
   /**
    * ttf
    */
-  const ttf = new Buffer(svg2ttf(svg).buffer);
-  // fs.writeFileSync("fonts/font.ttf", ttf);
+  const ttf = Buffer.from(svg2ttf(svg).buffer);
   /**
    * eot
    */
-  const eot = new Buffer(ttf2eot(new Uint8Array(ttf)).buffer);
-  // fs.writeFileSync("fonts/font.eot", eot);
+  const eot = Buffer.from(ttf2eot(new Uint8Array(ttf)).buffer);
   /**
    * woff
    */
-  const woff = new Buffer(ttf2woff(new Uint8Array(ttf)).buffer);
-  // fs.writeFileSync("fonts/font.woff", woff);
+  const woff = Buffer.from(ttf2woff(new Uint8Array(ttf)).buffer);
   /**
    * woff2
    */
-  const woff2 = new Buffer(ttf2woff2(new Uint8Array(ttf)).buffer);
-  // fs.writeFileSync("fonts/font.woff2", woff2);
+  const woff2 = Buffer.from(ttf2woff2(new Uint8Array(ttf)).buffer);
   /**
    * base64
    */
@@ -103,11 +85,8 @@ async function generate(icons) {
     { fontFamily: "iconfont" }
   );
   // fs.writeFileSync("fonts/font.css", css.woff);
-  return css;
+  return css.woff;
 }
-
-
-
 /**
  * 获取文件夹下所有svg文件
  * @param {*} src  文件路径
@@ -125,41 +104,44 @@ async function getSvgFilesInDir(src) {
   });
 }
 /**
- * svg文件 --> icons集合
- * 
- * code -> hexcode/unicode/xmlcode
+ * 将文件夹下所有svg文件转换为icons集合
+ * @param {*} src
  */
-async function getIcons(src) {
-  return new Promise((resolve, reject) => {
-    const files = await getSvgFilesInDir(src);
+async function getIconsInDir(src) {
+  const files = await getSvgFilesInDir(src);
 
-    let code = 0xe000;
-    let icons = files.map(file => {
-      code++;
-      return {
-        file: './svg/' + file,
-        name: file.replace(".svg", ""),
-        code: code,
-        hex: code.toString(16),   // hexcode
-        unicode: String.fromCharCode(code), // unicode
-        xml: `&#x${code.toString(16)};`  // xmlcode
-      };
-    });
-    resolve(icons);
-
-  })
-
+  let code = 0xe000;
+  return (icons = files.map(file => {
+    code++;
+    return {
+      file: src + "/" + file,
+      name: file.replace(".svg", ""),
+      code: code,
+      hex: code.toString(16), // hexcode
+      unicode: String.fromCharCode(code), // unicode
+      xml: `&#x${code.toString(16)};` // xmlcode
+    };
+  }));
 }
-// readSvg("./svg").then(data => {
-//   let icons = getIcons(data);
-//   console.log(icons);
-// });
 
 async function css(src) {
-  const files = await readSvg(src);
-  const icons = getIcons(files);
-  const fontcss = await generate(icons);
-  console.log(fontcss.woff);
+  const icons = await getIconsInDir(src);
+  const cssbase64 = await icons2base64(icons);
+
+  const tpl = icons => `
+${cssbase64}
+.icon {
+  font-family:"iconfont";
+}
+${icons
+    .map(
+      icon => `.icon-${icon.name} {
+  contant:'${icon.hex}';
+}`
+    )
+    .join()}
+  `;
+  console.log(tpl(icons));
 }
 
 css("./svg");
