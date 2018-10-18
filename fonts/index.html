@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Page Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" media="screen" href="font.css" />
+    <link rel="stylesheet" href="https://www.panda.tv/cmstatic/pandaicon.css">
+    <style>
+        @font-face {
+            font-family: 'icomoon';
+            src: url('icomoon.eot?wrov5a');
+            src: url('icomoon.eot?wrov5a#iefix') format('embedded-opentype'),
+                url('icomoon.ttf?wrov5a') format('truetype'),
+                url('icomoon.woff?wrov5a') format('woff'),
+                url('icomoon.svg?wrov5a#icomoon') format('svg');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        [class^="test-"],
+        [class*=" test-"] {
+            /* use !important to prevent issues with browser extensions that change fonts */
+            font-family: 'icomoon' !important;
+            speak: none;
+            font-style: normal;
+            font-weight: normal;
+            font-variant: normal;
+            text-transform: none;
+            line-height: 1;
+
+            /* Better Font Rendering =========== */
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .test-set:before {
+            content: "\e001";
+        }
+
+        .test-all:before {
+            content: "\e000";
+        }
+    </style>
+</head>
+
+<body>
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+        }
+
+        body {
+            padding: 100px;
+        }
+
+        i {
+            font-style: normal;
+        }
+
+
+        div {
+            float: left;
+            border-bottom: 1px solid red;
+        }
+
+        div:after {
+            content: '';
+            clear: both;
+        }
+
+        i {
+            border-bottom: 1px solid red;
+        }
+
+        .icon-all {
+            font-size: 70px;
+            line-height: 70px;
+        }
+
+        .ricon-all {
+            font-size: 70px;
+            line-height: 70px;
+        }
+
+        .test-all,.test-set {
+            font-size: 70px;
+            line-height: 70px;
+        }
+    </style>
+    <div>
+        <i class="icon icon-all"></i>
+        <p>aaaaaa</p>
+    </div>
+    <div>
+        <i class="ricon ricon-all"></i>
+        <p>aaaaaa</p>
+    </div>
+    <div>
+        <i style="font-size:70px;line-height:70px;font-family:'宋体';">张</i>
+        <p>aaaaaa</p>
+    </div>
+    <div>
+        <i class="test-all"></i>
+        <p>aaaaaa</p>
+    </div>
+    <div>
+        <i class="test-set"></i>
+        <p>aaaaaa</p>
+    </div>
+</body>
+
+</html>

@@ -5,6 +5,7 @@ const ttf2woff = require("ttf2woff");
 const ttf2eot = require("ttf2eot");
 const ttf2woff2 = require("ttf2woff2");
 const woff2base64 = require("woff2base64");
+const svgpath = require("svgpath");
 
 const config = {
   fontName: "iconfont",
@@ -27,7 +28,9 @@ async function icons2SVGFont(icons) {
       fontName: "demo",
       fontHeight: 1024,
       fontWidth: 1024,
-      round: 1000
+      ascent: 960,
+      descent: -64,
+      fontWeight: 500
     };
     const stream = new SVGIcons2SVGFontStream(opts);
     let font = Buffer.alloc(0);
@@ -61,6 +64,7 @@ async function icons2base64(icons) {
    * svg
    */
   const svg = await icons2SVGFont(icons);
+  fs.writeFileSync("fonts/font.svg", svg);
   /**
    * ttf
    */
@@ -131,16 +135,23 @@ async function css(src) {
   const tpl = icons => `
 ${cssbase64}
 .icon {
-  font-family:"iconfont";
+  font-family:'iconfont';
+  font-size: 16px;
+  font-style: normal;
+  -webkit-font-smoothing: antialiased;
+  -webkit-text-stroke-width: 0.2px;
+  -moz-osx-font-smoothing: grayscale;
 }
 ${icons
     .map(
-      icon => `.icon-${icon.name} {
-  contant:'${icon.hex}';
+      icon => `.icon-${icon.name}:before {
+        content:'\\${icon.hex}';
 }`
     )
-    .join()}
+    .join("\n")}
   `;
+
+  fs.writeFileSync("fonts/font.css", tpl(icons));
   console.log(tpl(icons));
 }
 
