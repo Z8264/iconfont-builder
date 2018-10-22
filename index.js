@@ -1,4 +1,4 @@
-const SVGIcons2SVGFontStream = require("svgicons2svgfont");
+const SVGIcons2SVGFontStream = require("./svgicons2svgfontstream");
 const fs = require("fs");
 const svg2ttf = require("svg2ttf");
 const ttf2woff = require("ttf2woff");
@@ -6,6 +6,7 @@ const ttf2eot = require("ttf2eot");
 const ttf2woff2 = require("ttf2woff2");
 const woff2base64 = require("woff2base64");
 const svgpath = require("svgpath");
+const Font = require("fonteditor-core").Font;
 
 const config = {
   fontName: "iconfont",
@@ -28,14 +29,15 @@ async function icons2SVGFont(icons) {
       fontName: "demo",
       fontHeight: 1024,
       fontWidth: 1024,
-      ascent: 960,
-      descent: -64,
-      fontWeight: 500
+      // ascent: 960,
+      // descent: -64,
+      fontWeight: 400
     };
     const stream = new SVGIcons2SVGFontStream(opts);
     let font = Buffer.alloc(0);
     stream
       .on("data", data => {
+        console.log(data.toString());
         font = Buffer.concat([font, data]);
       })
       .on("finish", () => {
@@ -46,6 +48,7 @@ async function icons2SVGFont(icons) {
       });
     icons.forEach(icon => {
       const glyph = fs.createReadStream(icon.file);
+      // console.log(glyph);
       glyph.metadata = {
         unicode: [icon.unicode],
         name: icon.name
@@ -88,7 +91,7 @@ async function icons2base64(icons) {
     { "q.woff2": woff2, "q.woff": woff },
     { fontFamily: "iconfont" }
   );
-  // fs.writeFileSync("fonts/font.css", css.woff);
+
   return css.woff;
 }
 /**
@@ -128,31 +131,53 @@ async function getIconsInDir(src) {
   }));
 }
 
+/**
+ * CSS Template
+ * @param {Object} data
+ * -- fontName
+ * -- prefix
+ * -- icons
+ *   -- name
+ *   -- hex
+ */
+const cssTemplate = data => `
+  ${data.base64}
+  .${data.prefix} {
+    /* use !important to prevent issues with browser extensions that change fonts */
+    font-family: '${data.fontName}' !important;
+    speak: none;
+    font-style: normal;
+    font-weight: normal;
+    font-variant: normal;
+    text-transform: none;
+    line-height: 1;
+
+    /* Better Font Rendering =========== */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  ${data.icons.map(icon=>`
+  .${data.prefix}-${icon.name}:before {
+    content:'\\${icon.hex}';
+  }
+  `).join('')}
+`;
+
+
 async function css(src) {
   const icons = await getIconsInDir(src);
+
   const cssbase64 = await icons2base64(icons);
 
-  const tpl = icons => `
-${cssbase64}
-.icon {
-  font-family:'iconfont';
-  font-size: 16px;
-  font-style: normal;
-  -webkit-font-smoothing: antialiased;
-  -webkit-text-stroke-width: 0.2px;
-  -moz-osx-font-smoothing: grayscale;
-}
-${icons
-    .map(
-      icon => `.icon-${icon.name}:before {
-        content:'\\${icon.hex}';
-}`
-    )
-    .join("\n")}
-  `;
+  const css = cssTemplate({
+    base64: cssbase64,
+    fontName:'iconfont',
+    prefix:'icon',
+    icons: icons
+  })
 
-  fs.writeFileSync("fonts/font.css", tpl(icons));
-  console.log(tpl(icons));
+  fs.writeFileSync("fonts/font.css", css);
+  console.log(css);
 }
 
 css("./svg");
