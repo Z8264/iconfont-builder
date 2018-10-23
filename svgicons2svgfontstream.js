@@ -456,7 +456,8 @@ class SVGIcons2SVGFontStream extends Transform {
       if (this._options.fixedWidth) {
         glyph.width = fontWidth;
       }
-      const yOffset = glyph.height - this._options.descent;
+      const yOffset =
+        glyph.height - this._options.descent - 120;
       const glyphPathTransform = new Matrix().transform(
         1,
         0,

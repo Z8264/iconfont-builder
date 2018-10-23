@@ -29,15 +29,15 @@ async function icons2SVGFont(icons) {
       fontName: "demo",
       fontHeight: 1024,
       fontWidth: 1024,
-      // ascent: 960,
-      // descent: -64,
-      fontWeight: 400
+      ascent: 960,
+      descent: -64
+      // fontWeight: 400
     };
     const stream = new SVGIcons2SVGFontStream(opts);
     let font = Buffer.alloc(0);
     stream
       .on("data", data => {
-        console.log(data.toString());
+        // console.log(data.toString());
         font = Buffer.concat([font, data]);
       })
       .on("finish", () => {
@@ -48,7 +48,6 @@ async function icons2SVGFont(icons) {
       });
     icons.forEach(icon => {
       const glyph = fs.createReadStream(icon.file);
-      // console.log(glyph);
       glyph.metadata = {
         unicode: [icon.unicode],
         name: icon.name
@@ -177,7 +176,7 @@ async function css(src) {
   })
 
   fs.writeFileSync("fonts/font.css", css);
-  console.log(css);
+  console.log('css is ok');
 }
 
 css("./svg");
