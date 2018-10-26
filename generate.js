@@ -101,11 +101,64 @@ async function generate(src) {
   });
 }
 
-generate().then(data => {
-  console.log(data);
+// generate().then(data => {
+//   console.log(data);
+// });
+
+
+const svgTemplate = data =>`
+`;
+
+function standard(buffer) {
+  const sax = Sax.createStream(true);
+  let x, y, w, h;
+  let paths = [];
+  let d;
+
+  const transformStack = [new Matrix()];
+  function applyTransform(d) {
+    return new SVGPathData(d).matrix(
+      ...transformStack[transformStack.length - 1].toArray()
+    );
+  }
+
+  sax.on('opentag', tag => {
+    if (tag.name === "svg") {
+      let vb = "viewBox" in tag.attributes ? tag.attributes.viewBox
+        .split(/\s*,*\s|\s,*\s*|,/)
+        .map(value => parseFloat(value)) : [0, 0, 0, 0];
+      x = vb[0];
+      y = vb[1];
+      w = "width" in tag.attributes ? parseFloat(tag.attributes.width) : vb[2];
+      h = "height" in tag.attributes ? parseFloat(tag.attributes.height) : vb[3];
+
+    } else if (tag.name === "path" && tag.attributes.d) {
+      paths.push(applyTransform(tag.attributes.d));
+    }
+  })
+
+  sax.on('end', () => {
+    const standardPath = new SVGPathData('');
+    const standardPathTransform = new Matrix().transform(1, 0, 0, -1, 0, 0);
+    paths.forEach(path => {
+      standardPath.commands.push(...path.toAbs().matrix(...standardPathTransform.toArray()).commands)
+    })
+    d =  standardPath.round(1).encode();
+  })
+
+  sax.write(buffer);
+  sax.end();
+  console.log(paths,d);
+
+}
+
+
+
+
+var st = fs.createReadStream("./svg/set.svg");
+st.on('data', data => {
+  standard(data);
 });
-
-
 /**
  * 测试
  */
