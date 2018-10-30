@@ -5,8 +5,13 @@ const STANDARD_WIDTH = 1024;
 const STANDARD_HEIGHT = 1024;
 const STANDARD_ROUND = 1;
 /**
- *
- * @param {*} buffer
+ * 标准化svg文件
+ * -- 统一偏移量：0 0
+ * -- 统一画布大小：1024*1024
+ * -- 合并所有path路径
+ * -- round = 1
+ * @param {Buffer || String} buffer
+ * @return {String} path的d属性
  */
 module.exports = function standard(buffer) {
   const sax = Sax.createStream(true);
@@ -45,4 +50,4 @@ module.exports = function standard(buffer) {
   sax.end();
 
   return d;
-}
+};

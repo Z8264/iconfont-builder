@@ -1,34 +1,26 @@
 const fs = require("fs");
-const svgpath = require("svgpath");
-const svg2ttf = require("svg2ttf");
-const ttf2woff = require("ttf2woff");
-const ttf2eot = require("ttf2eot");
-const ttf2woff2 = require("ttf2woff2");
-const woff2base64 = require("woff2base64");
 
 const standard = require("./utils/standerd");
-const SVGTemplate = require("./utils/SVGTemplate");
-const FontTemplate = require("./utils/FontTemplate");
-const CSSTemplate = require("./utils/CSSTemplate");
+const generate = require("./utils/generate");
 
 class Font {
   constructor(options = {}) {
     /**
-     * 字体的名称，font-family的属性值
+     * 字体的名称，用于font-family的属性值
      */
-    this.fontName = options.fontName || "iconfont";
+    this._fontName = options.fontName || "iconfont";
     /**
-     * 前缀
+     * 前缀，用于css类名
      */
-    this.prefix = options.prefix || "icon";
+    this._prefix = options.prefix || "icon";
     /**
      * 存放字体图标 Icon 对象
      */
-    this.icons = [];
+    this._icons = [];
     /**
      * 当前unicode计数
      */
-    this._currentCode = 0xe000;
+    this._code = 0xe000;
     /**
      * 用于存储已经存在的unicode
      */
@@ -37,6 +29,22 @@ class Font {
      * 用于已经存在的name
      */
     this._nameStack = [];
+
+    /**
+     * 当fontName,prefix,icons更新时,_latest变为false，需要重新调用generate进行编译
+     */
+    this._latest = false;
+
+    /**
+     * 调用generate，编译字体文件
+     * 生成 ttf，eot，woff，woff2，base64，css，html
+     */
+    this._ttf = "";
+    this._eot = "";
+    this._woff = "";
+    this._woff2 = "";
+    this._css = "";
+    this._html = "";
   }
   /**
    * 添加一个图标到字体中
@@ -44,8 +52,6 @@ class Font {
    * @param {Buffer || String} buffer  图标Buffer
    */
   add(name, buffer) {
-    let me = this;
-
     /**
      * 判断数据是否合法
      */
@@ -63,16 +69,16 @@ class Font {
     /**
      * unicode不能重复，给与一个合法的unicode
      */
-    let code = this._currentCode++;
+    let code = this._code++;
     while (this._codeStack.includes(code)) {
-      code = this._currentCode++;
+      code = this._code++;
     }
     /**
      * 添加单个icon
      */
     this._nameStack.push(name);
     this._codeStack.push(code);
-    this.icons.push({
+    this._icons.push({
       name: name,
       d: standard(buffer),
       code: code
@@ -80,74 +86,118 @@ class Font {
       // unicode: String.fromCharCode(code), // unicode
       // xml: `&#x${code.toString(16)};` // xmlcode
     });
-  }
 
+    this._latest = false;
+  }
+  /**
+   * 读取svg文件或文件夹中的svg文件，添加到font
+   * @param {*} src
+   */
+  from(src) {
+    if (!fs.existsSync(src)) return;
+    if (fs.statSync(src).isDirectory()) this._fromDir(src);
+    else this._fromFile(src);
+  }
+  /**
+   * 读取svg文件，并添加到Font
+   * @param {*} src
+   */
+  _fromFile(src) {
+    const val = src.match(/^.+\/(\w+\.\w+)/i)[1].split(".");
+    const name = val[0];
+    const type = val[1];
+    if (type.toLowerCase !== "svg") return;
+    const buffer = fs.readFileSync(src);
+    this.add(name, buffer);
+  }
+  /**
+   * 批量读取文件夹中的svg文件，并添加到Font
+   * @param {*} src
+   */
+  _fromDir(src) {
+    const _this = this;
+    const files = fs.readdirSync(src).filter(file => /\.svg$/i.test(file));
+    files.map(file => {
+      const name = file.replace(".svg", "");
+      const buffer = fs.readFileSync(src + "/" + file);
+      _this.add(name, buffer);
+    });
+  }
   generate() {
-    /**
-     * 将icon做字体偏移
-     * 偏移量：-64
-     */
-    let glyphs = this.icons.map(icon => {
-      icon.d = svgpath(icon.d)
-        .translate(0, -64)
-        .rel()
-        .round(1)
-        .toString();
-      return icon;
-    });
-    /**
-     * svg
-     */
-    const svg = FontTemplate({
-      id: "",
-      width: 1024,
-      height: 1024,
-      ascent: 960,
-      descent: -64,
-      glyphs: glyphs
-    });
-    /**
-     * ttf
-     */
-    const ttf = Buffer.from(svg2ttf(svg).buffer);
-    /**
-     * woff
-     */
-    const woff = Buffer.from(ttf2woff(new Uint8Array(ttf)).buffer);
-    /**
-     * woff2
-     */
-    const woff2 = Buffer.from(ttf2woff2(new Uint8Array(ttf)).buffer);
-    /**
-     * base64
-     */
-    const base64 = woff2base64(
-      { "q.woff2": woff2, "q.woff": woff },
-      { fontFamily: "iconfont" }
-    ).woff;
-    /**
-     * css
-     */
-    const css = CSSTemplate({
-      fontName: this.fontName,
-      prefix: this.prefix,
-      base64: base64,
-      icons: this.icons
-    });
-    return css;
+    const res = generate(this._icons, this._fontName, this._prefix);
+    this._svg = res.svg;
+    this._ttf = res.ttf;
+    this._eot = res.eot;
+    this._woff = res.woff;
+    this._woff2 = res.woff2;
+    this._css = res.css;
+    this._html = res.html;
+    this._latest = true;
+  }
+  /**
+   * fontName
+   */
+  get fontName() {
+    return this._fontName;
+  }
+  set fontName(value = "") {
+    this._fontName = value;
+    this._latest = false;
+  }
+  /**
+   * prefix
+   */
+  get prefix() {
+    return this._prefix;
+  }
+  set prefix(value = "") {
+    this._prefix = value;
+    this._latest = false;
+  }
+  /**
+   * icons
+   */
+  get icons() {
+    return this._icons;
+  }
+  /**
+   *  获取生成genrate之后的文件
+   */
+  get svg() {
+    if (!this._latest) this.generate();
+    return this._svg;
+  }
+  get ttf() {
+    if (!this._latest) this.generate();
+    return this._ttf;
+  }
+  get eot() {
+    if (!this._latest) this.generate();
+    return this._eot;
+  }
+  get woff() {
+    if (!this._latest) this.generate();
+    return this._woff;
+  }
+  get woff2() {
+    if (!this._latest) this.generate();
+    return this._woff2;
+  }
+  get css() {
+    if (!this._latest) this.generate();
+    return this._css;
+  }
+  get html() {
+    if (!this._latest) this.generate();
+    return this._html;
   }
 }
 
 let font = new Font();
 
-let files = fs.readdirSync("../svg").filter(file => /\.svg$/i.test(file));
-files.map(file => {
-  const name = file.replace(".svg", "");
-  const buffer = fs.readFileSync("../svg" + "/" + file);
-  font.add(name, buffer);
-});
+font.from("../svg");
 
-let css = font.generate();
+console.log(font.css);
 
-fs.writeFileSync("../fonts/font.css", css);
+fs.writeFileSync("../fonts/font.css", font.css);
 console.log("css is ok");

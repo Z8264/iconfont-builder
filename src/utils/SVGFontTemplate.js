@@ -4,7 +4,7 @@ module.exports = font => `
 <svg xmlns="http://www.w3.org/2000/svg">
 <metadata></metadata>
 <defs>
-  <font id="${font.id}" horiz-adv-x="${font.width}">
+  <font horiz-adv-x="${font.width}">
     <font-face units-per-em="${font.height}" ascent="${font.ascent}" descent="${
   font.descent
 }" />
