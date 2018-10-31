@@ -3,7 +3,6 @@ const svg2ttf = require("svg2ttf");
 const ttf2woff = require("ttf2woff");
 const ttf2eot = require("ttf2eot");
 const ttf2woff2 = require("ttf2woff2");
-const woff2base64 = require("woff2base64");
 
 const SVGFontTemplate = require("./SVGFontTemplate");
 const CSSTemplate = require("./CSSTemplate");
@@ -62,10 +61,7 @@ function generate(icons, fontName = "iconfont", prefix = "icon") {
   /**
    * base64
    */
-  const base64 = woff2base64(
-    { "q.woff2": woff2, "q.woff": woff },
-    { fontFamily: fontName }
-  ).woff;
+  const base64 = woff.toString('base64');
   /**
    * css
    */
