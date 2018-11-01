@@ -13,7 +13,7 @@ const STANDARD_ROUND = 1;
  * @param {Buffer || String} buffer
  * @return {String} path的d属性
  */
-module.exports = function standard(buffer) {
+module.exports = function normalize(buffer) {
   const sax = Sax.createStream(true);
   let x, y, w, h;
   let paths = [];

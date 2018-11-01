@@ -1,9 +1,8 @@
 const fs = require("fs");
 
-const standard = require("./utils/standerd");
-const generate = require("./utils/generate");
+const core = require("./core/core");
 
-class Font {
+module.exports = class Font {
   constructor(options = {}) {
     /**
      * 字体的名称，用于font-family的属性值
@@ -37,7 +36,7 @@ class Font {
 
     /**
      * 调用generate，编译字体文件
-     * 生成 ttf，eot，woff，woff2，base64，css，html
+     * 生成 ttf，eot，woff，woff2，css，html
      */
     this._ttf = "";
     this._eot = "";
@@ -45,6 +44,12 @@ class Font {
     this._woff2 = "";
     this._css = "";
     this._html = "";
+  }
+  static normalize() {
+    return core.normalize.apply(this, arguments);
+  }
+  static generate() {
+    return core.generate.apply(this, arguments);
   }
   /**
    * 添加一个图标到字体中
@@ -80,9 +85,8 @@ class Font {
     this._codeStack.push(code);
     this._icons.push({
       name: name,
-      d: standard(buffer),
-      code: code
-      // hex: code.toString(16), // hexcode
+      d: core.normalize(buffer),
+      hex: code.toString(16) // 十六进制
       // unicode: String.fromCharCode(code), // unicode
       // xml: `&#x${code.toString(16)};` // xmlcode
     });
@@ -124,7 +128,7 @@ class Font {
     });
   }
   generate() {
-    const res = generate(this._icons, this._fontName, this._prefix);
+    const res = core.generate(this._icons, this._fontName, this._prefix);
     this._svg = res.svg;
     this._ttf = res.ttf;
     this._eot = res.eot;
@@ -191,13 +195,4 @@ class Font {
     if (!this._latest) this.generate();
     return this._html;
   }
-}
-
-let font = new Font();
-
-font.from("../svg");
-
-console.log(font.css);
-
-fs.writeFileSync("../fonts/font.css", font.css);
-console.log("css is ok");
+};

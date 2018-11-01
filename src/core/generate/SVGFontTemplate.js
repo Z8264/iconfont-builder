@@ -1,3 +1,7 @@
+/**
+ * svg font模板
+ * @param {object}
+ */
 module.exports = font => `
 <?xml version="1.0" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd" >
@@ -13,7 +17,7 @@ module.exports = font => `
       .map(
         glyph => `
     <glyph glyph-name="${glyph.name}"
-      unicode="&#x${glyph.code.toString(16)};"
+      unicode="&#x${glyph.hex};"
       horiz-adv-x="${font.width}"
       d="${glyph.d}" />
     `

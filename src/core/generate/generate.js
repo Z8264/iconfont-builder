@@ -14,8 +14,8 @@ const HTMLTemplate = require("./HTMLTemplate");
  * @param {String} fontName
  * @param {String} prefix
  *  -- name   图标名称
- *  -- code   图标unicode
- *  -- d      图标d属性值
+ *  -- hex    十六进制编码，用于图标unicode
+ *  -- d      图标d属性值 -- 符合标准化
  * @returns { svg, ttf, eot, woff, woff2, css, html }
  */
 function generate(icons, fontName = "iconfont", prefix = "icon") {
@@ -25,12 +25,14 @@ function generate(icons, fontName = "iconfont", prefix = "icon") {
    * 偏移原因：为了适配字体基线
    */
   const glyphs = icons.map(icon => {
-    icon.d = svgpath(icon.d)
+    const name = prefix + "-" + icon.name;
+    const d = svgpath(icon.d)
       .translate(0, -64)
       .rel()
       .round(1)
       .toString();
-    return icon;
+    const hex = icon.hex;
+    return { name, d, hex };
   });
   /**
    * svg
@@ -61,7 +63,7 @@ function generate(icons, fontName = "iconfont", prefix = "icon") {
   /**
    * base64
    */
-  const base64 = woff.toString('base64');
+  const base64 = woff.toString("base64");
   /**
    * css
    */
