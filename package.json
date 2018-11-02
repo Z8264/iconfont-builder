@@ -1,27 +1,19 @@
 {
-  "name": "iconfont-builder",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "name": "fonter",
+  "version": "0.0.1",
+  "description": "font test",
+  "main": "./src/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "font-carrier": "^0.0.12",
-    "fonteditor-core": "^1.0.5",
-    "punycode": "^2.1.1",
     "sax": "^1.2.4",
-    "string.prototype.codepointat": "^0.2.1",
-    "svg-pathdata": "^5.0.2",
     "svg2ttf": "^4.1.0",
-    "svgicons2svgfont": "^9.0.3",
     "svgpath": "^2.2.1",
-    "transformation-matrix-js": "^2.7.6",
     "ttf2eot": "^2.0.0",
     "ttf2woff": "^2.0.1",
-    "ttf2woff2": "^2.0.3",
-    "woff2base64": "^1.0.1"
+    "ttf2woff2": "^2.0.3"
   }
 }

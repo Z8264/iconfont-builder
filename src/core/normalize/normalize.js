@@ -4,6 +4,7 @@ const svgpath = require("svgpath");
 const STANDARD_WIDTH = 1024;
 const STANDARD_HEIGHT = 1024;
 const STANDARD_ROUND = 1;
+
 /**
  * 标准化svg文件
  * -- 统一偏移量：0 0
@@ -13,7 +14,7 @@ const STANDARD_ROUND = 1;
  * @param {Buffer || String} buffer
  * @return {String} path的d属性
  */
-module.exports = function normalize(buffer) {
+module.exports = function normalize(buffer, options) {
   const sax = Sax.createStream(true);
   let x, y, w, h;
   let paths = [];
