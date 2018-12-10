@@ -1,4 +1,7 @@
-const normalize = require("./core/normalize/normalize");
-const generate = require("./core/generate/generate");
+import Vue from 'vue'
+import App from './components/App.vue'
 
-module.exports = { normalize, generate };
+let vm = new Vue({
+  el: '#demo',
+  render: h => h(App)
+})

@@ -4,16 +4,23 @@
   "description": "font test",
   "main": "./src/index.js",
   "scripts": {
+    "dev": "webpack && webpack-dev-server --open --hot",
+    "build": "",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "sax": "^1.2.4",
-    "svg2ttf": "^4.1.0",
-    "svgpath": "^2.2.1",
-    "ttf2eot": "^2.0.0",
-    "ttf2woff": "^2.0.1",
-    "ttf2woff2": "^2.0.3"
+    "vue": "^2.5.19"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.2.0",
+    "babel-loader": "^8.0.4",
+    "css-loader": "^2.0.0",
+    "vue-loader": "^15.4.2",
+    "vue-template-compiler": "^2.5.19",
+    "webpack": "^4.26.1",
+    "webpack-cli": "^3.1.2",
+    "webpack-dev-server": "^3.1.10"
   }
 }
